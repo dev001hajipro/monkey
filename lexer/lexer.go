@@ -17,6 +17,7 @@ func New(input string) *Lexer {
 	return l
 }
 
+// readChar set char to ch and update position to next.
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
@@ -25,6 +26,15 @@ func (l *Lexer) readChar() {
 	}
 	l.position = l.readPosition
 	l.readPosition += 1
+}
+
+// return peeked char.
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	} else {
+		return l.input[l.readPosition]
+	}
 }
 
 func (l *Lexer) NextToken() token.Token {
