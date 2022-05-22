@@ -83,6 +83,7 @@ let result = add(five, ten);
 		{token.IDENT, "y"},
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
+		{token.SEMICOLON, ";"},
 
 		// let result = add(five, ten);
 		{token.LET, "let"},

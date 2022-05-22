@@ -1,6 +1,8 @@
 package lexer
 
-import "github.com/dev001hajipro/monkey/token"
+import (
+	"github.com/dev001hajipro/monkey/token"
+)
 
 type Lexer struct {
 	input        string
@@ -55,6 +57,10 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
+		} else if isDigit(l.ch) {
+			tok.Literal = l.readNumber()
+			tok.Type = token.INT
+			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch)
 		}
@@ -75,13 +81,25 @@ func (l *Lexer) readIdentifier() string {
 	}
 	return l.input[pos:l.position]
 }
+func (l *Lexer) readNumber() string {
+	pos := l.position
+	for isDigit(l.ch) {
+		l.readChar()
+	}
+	return l.input[pos:l.position]
+}
 
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
+func isDigit(ch byte) bool {
+	return '0' <= ch && ch <= '9'
+}
+
 func (l *Lexer) skipWhitespace() {
-	if l.ch == ' ' || l.ch == '\t' || l.ch == '\n' ||l.ch == '\r' {
+
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
 	}
 }
