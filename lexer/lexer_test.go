@@ -42,7 +42,7 @@ func TestNextToken(t *testing.T) {
 	}
 }
 
-func TestNextToken2(t *testing.T) {
+func TestNextToken3(t *testing.T) {
 	input := `let five = 5;
 let ten = 10;
 
@@ -50,7 +50,8 @@ let add = fn(x, y) {
 	x + y;
 };
 let result = add(five, ten);
-`
+!-/*5;
+5 < 10 > 5;`
 
 	tests := []ExpectedType{
 		{token.LET, "let"},
@@ -66,7 +67,7 @@ let result = add(five, ten);
 		{token.SEMICOLON, ";"},
 
 		// let add = fn(x,y) {
-		//   x + y;	
+		//   x + y;
 		// }
 		{token.LET, "let"},
 		{token.IDENT, "add"},
@@ -96,6 +97,11 @@ let result = add(five, ten);
 		{token.IDENT, "ten"},
 		{token.RPAREN, ")"},
 		{token.SEMICOLON, ";"},
+
+/* todo: add the ExpectedType 
+!-/*5;
+5 < 10 > 5;`
+*/
 
 		{token.EOF, ""},
 	}
