@@ -8,12 +8,22 @@ import (
 	"github.com/dev001hajipro/monkey/token"
 )
 
+type (
+	// ex) -1, +1
+	prefixParseFn func() ast.Expression
+	// ex) 1 + 1, 1 * 1
+	infixParseFn  func(ast.Expression/*left operand */) ast.Expression
+)
+
 type Parser struct {
 	l      *lexer.Lexer
 	errors []string
 
 	curToken  token.Token
 	peekToken token.Token
+
+	prefixParseFn map[token.TokenType]prefixParseFn
+	infixParseFn map[token.TokenType]infixParseFn
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -114,3 +124,12 @@ func (p *Parser) ParseProgram() *ast.Program {
 	}
 	return program
 }
+
+func (p *Parser)registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
+	p.prefixParseFn[tokenType] = fn
+}
+
+func (p *Parser)registerInfix(tokenType token.TokenType, fn infixParseFn) {
+	p.infixParseFn[tokenType] = fn
+}
+
