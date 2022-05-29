@@ -83,39 +83,34 @@ let foobar = 838383;
 }
 
 func TestLetStatements2(t *testing.T) {
-	input := `
+	inputOfFailLetStatements := `
 let x 5;
 let = 10;
 let 838383;
 `
-	l := lexer.New(input)
+	l := lexer.New(inputOfFailLetStatements)
 	p := New(l)
 
 	program := p.ParseProgram()
-	checkParserErrors(t, p)
+	//checkParserErrors(t, p)
 
 	if program == nil {
 		t.Fatalf("ParseProgram() returned nil")
 	}
-	if len(program.Statements) != 3 {
-		t.Fatalf("program.Statements does not contain 3 statements. got=%d",
-			len(program.Statements))
+	// if len(program.Statements) != 3 {
+	// 	t.Fatalf("program.Statements does not contain 3 statements. got=%d",
+	// 		len(program.Statements))
+	// }
+
+	if len(p.errors) != 3 {
+		t.Fatalf("3 errors is correct. got=%d", len(p.errors))
 	}
 
-	tests := []struct {
-		expectedIdentifier string
-	}{
-		{"x"},
-		{"y"},
-		{"foobar"},
+	// show errors
+	for _, msg := range p.errors {
+		t.Logf("parser error: %q", msg)
 	}
 
-	for i, tt := range tests {
-		stmt := program.Statements[i]
-		if !testLetStatement(t, stmt, tt.expectedIdentifier) {
-			return
-		}
-	}
 }
 
 func TestReturnStatement(t *testing.T) {
