@@ -93,28 +93,15 @@ let 838383;
 	p := New(l)
 
 	program := p.ParseProgram()
-	checkParserErrors(t, p)
-
 	if program == nil {
 		t.Fatalf("ParseProgram() returned nil")
 	}
-	if len(program.Statements) != 3 {
-		t.Fatalf("program.Statements does not contain 3 statements. got=%d",
-			len(program.Statements))
+	if len(p.errors) != 3 {
+		t.Fatalf("should return 3 parser error")
 	}
-
-	tests := []struct {
-		expectedIdentifier string
-	}{
-		{"x"},
-		{"y"},
-		{"foobar"},
+	// log
+	for _, msg := range p.errors {
+		t.Logf("parser error: %q", msg)
 	}
-
-	for i, tt := range tests {
-		stmt := program.Statements[i]
-		if !testLetStatement(t, stmt, tt.expectedIdentifier) {
-			return
-		}
-	}
+	
 }
