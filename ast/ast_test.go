@@ -6,8 +6,9 @@ import (
 	"github.com/dev001hajipro/monkey/token"
 )
 
-// assertion test
-// this test build AST by my hand.
+// demo
+// if code is 'let myVar = anotherVar;'
+// AST become follow code.
 func TestString(t *testing.T) {
 	program := &Program{
 		Statements: []Statement{

@@ -137,6 +137,16 @@ return 993322;
 		if returnStmt.TokenLiteral() != "return" {
 			t.Errorf("returnStmt.TokenLiteral not 'return', got %q", returnStmt.TokenLiteral())
 		}
+		if program == nil {
+			t.Fatalf("ParseProgram() returned nil")
+		}
+		if len(p.errors) != 3 {
+			t.Fatalf("should return 3 parser error")
+		}
+		// log
+		for _, msg := range p.errors {
+			t.Logf("parser error: %q", msg)
+		}
 	}
 }
 
