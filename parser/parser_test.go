@@ -126,7 +126,8 @@ return 993322;
 	checkParserErrors(t, p)
 
 	if len(program.Statements) != 3 {
-		t.Fatalf("program.Statements does not contain 3 statements. got=%d", len(program.Statements))
+		t.Fatalf("program.Statements does not contain 3 statements. got=%d",
+			len(program.Statements))
 	}
 
 	for _, stmt := range program.Statements {
@@ -135,17 +136,8 @@ return 993322;
 			t.Errorf("stmt ont *ast.ReturnStatement. got=%T", stmt)
 		}
 		if returnStmt.TokenLiteral() != "return" {
-			t.Errorf("returnStmt.TokenLiteral not 'return', got %q", returnStmt.TokenLiteral())
-		}
-		if program == nil {
-			t.Fatalf("ParseProgram() returned nil")
-		}
-		if len(p.errors) != 3 {
-			t.Fatalf("should return 3 parser error")
-		}
-		// log
-		for _, msg := range p.errors {
-			t.Logf("parser error: %q", msg)
+			t.Errorf("returnStmt.TokenLiteral not 'return', got %q",
+				returnStmt.TokenLiteral())
 		}
 	}
 }
