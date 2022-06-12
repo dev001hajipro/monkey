@@ -20,7 +20,6 @@ const (
 	CALL        // myFunction(X)
 )
 
-// order
 var precedence = map[token.TokenType]int{
 	token.EQ:       EQUALS,
 	token.NOT_EQ:   EQUALS,
@@ -259,10 +258,15 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 
 	// precedence of current infix operator.
 	precedence := p.curPrecedence()
-
-	// token become to right operand.
-	p.nextToken()
+	p.nextToken() // token become to right operand.
+	// if expression.Operator == "+" {
+	// 	// +が右結合
+	// 	expression.Right = p.parseExpression(precedence - 1)
+	// } else {
+	// 	expression.Right = p.parseExpression(precedence)
+	// }
 	expression.Right = p.parseExpression(precedence)
+	
 
 	return expression
 }
