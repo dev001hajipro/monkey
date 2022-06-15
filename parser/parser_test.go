@@ -553,5 +553,4 @@ func TestOperatorPrecedenceParsing3(t *testing.T) {
 			t.Errorf("expected=%q, got=%q", tt.expected, actual)
 		}
 	}
-
 }
