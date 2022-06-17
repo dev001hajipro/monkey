@@ -29,6 +29,7 @@ var precedence = map[token.TokenType]int{
 	token.MINUS:    SUM,
 	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
+	token.LPAREN:   CALL,
 }
 
 type (
@@ -86,6 +87,10 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
+
+	// the call expressiosn is like a `add(1 + 2)`
+	// it is parsed by '('. it just like infix operator.
+	p.registerInfix(token.LPAREN, p.parseCallExpression)
 
 	// call nextToken twice to initialize curToken and peekToken.
 	p.nextToken()
@@ -149,7 +154,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	return stmt
 }
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
-	defer untrace(trace("parseExpressionStatement"))
+	//defer untrace(trace("parseExpressionStatement"))
 
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 	stmt.Expression = p.parseExpression(LOWEST)
@@ -161,7 +166,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return stmt
 }
 func (p *Parser) parseExpression(precedence int) ast.Expression {
-	defer untrace(trace("parseExpression"))
+	//defer untrace(trace("parseExpression"))
 
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
@@ -238,7 +243,7 @@ func (p *Parser) parseIdentifier() ast.Expression {
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Expression {
-	defer untrace(trace("parseIntegerLiteral"))
+	//defer untrace(trace("parseIntegerLiteral"))
 
 	lit := &ast.IntegerLiteral{Token: p.curToken}
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
@@ -252,7 +257,7 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 	return lit
 }
 func (p *Parser) parsePrefixExpression() ast.Expression {
-	defer untrace(trace("parsePrefixExpression"))
+	//defer untrace(trace("parsePrefixExpression"))
 
 	expression := &ast.PrefixExpression{
 		Token:    p.curToken,
@@ -267,7 +272,7 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 // current token(p.curToken) is set to the infix operator.
 // <expression> <infix operator> <expression>
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
-	defer untrace(trace("parseInfixExpression"))
+	//defer untrace(trace("parseInfixExpression"))
 
 	expression := &ast.InfixExpression{
 		Token:    p.curToken,
@@ -386,7 +391,7 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 		p.nextToken() // token's position is COMMA
 		p.nextToken() // postion is identifier or other token.
 		ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
-		identififiers = append(identififiers, ident)			
+		identififiers = append(identififiers, ident)
 	}
 
 	if !p.expectPeek(token.RPAREN) {
@@ -394,4 +399,35 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 	}
 
 	return identififiers
+}
+
+func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
+	exp := &ast.CallExpression{Token: p.curToken, Function: function}
+	exp.Arguments = p.parseCallArguments()
+	return exp
+}
+
+func (p *Parser) parseCallArguments() []ast.Expression {
+	args := []ast.Expression{}
+
+	// if arguments is empty
+	if p.peekTokenIs(token.RPAREN) {
+		p.nextToken() //read right paren
+		return args
+	}
+
+	p.nextToken()
+	args = append(args, p.parseExpression(LOWEST))
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken() // skip comma
+		p.nextToken() // cursor position set to target argument.
+		args = append(args, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return args
 }

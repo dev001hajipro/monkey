@@ -198,14 +198,22 @@ func (bs *BlockStatement) String() string {
 	return out.String()
 }
 
+// function literal
+// fn(x) { x * 2 }
+// fn(x, y) { x + y; }
+//
+// example)
+// below code define add function in the Monkey language.
+// a function literal bind to 'add' of identifier
+// let add = fn(a, b) { a + b; }
 type FunctionLiteral struct {
-	Token token.Token
+	Token      token.Token
 	Parameters []*Identifier
-	Body *BlockStatement
+	Body       *BlockStatement
 }
 
-func (fl *FunctionLiteral) expressionNode() {}
-func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal}
+func (fl *FunctionLiteral) expressionNode()      {}
+func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
 func (fl *FunctionLiteral) String() string {
 	var out bytes.Buffer
 
@@ -223,3 +231,28 @@ func (fl *FunctionLiteral) String() string {
 	return out.String()
 }
 
+// add(x, y)
+// fn(a, b){ a + b; }(3, 5)
+type CallExpression struct {
+	Token     token.Token
+	Function  Expression // Idenetifier or FunctionLiteral
+	Arguments []Expression
+}
+
+func (cl *CallExpression) expressionNode()      {}
+func (cl *CallExpression) TokenLiteral() string { return cl.Token.Literal }
+func (cl *CallExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(cl.Function.String())
+
+	args := []string{}
+	for _, a := range cl.Arguments {
+		args = append(args, a.String())
+	}
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(")")
+
+	return out.String()
+}
