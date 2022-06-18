@@ -137,8 +137,12 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
-	// skip to semicolon.
-	for !p.curTokenIs(token.SEMICOLON) {
+	p.nextToken()
+
+	stmt.Value = p.parseExpression(LOWEST)
+
+	// cursor position set to the semicolon.
+	for p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
 
@@ -146,13 +150,18 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 }
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
+
 	p.nextToken()
-	//skip  to semicolon
-	for !p.curTokenIs(token.SEMICOLON) {
+
+	stmt.ReturnValue = p.parseExpression(LOWEST)
+
+	// cursor position set to the semicolon.
+	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
 	return stmt
 }
+
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	//defer untrace(trace("parseExpressionStatement"))
 
