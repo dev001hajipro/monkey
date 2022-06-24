@@ -47,8 +47,8 @@ func Start(in io.Reader, out io.Writer) {
 		}
 
 		// debug print
-		// io.WriteString(out, program.String())
-		// io.WriteString(out, "\n")
+		io.WriteString(out, "[DEBUG] " + program.String())
+		io.WriteString(out, "\n")
 
 		evaluated := evaluator.Eval(program)
 		if evaluated != nil {
