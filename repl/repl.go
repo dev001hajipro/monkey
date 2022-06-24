@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/dev001hajipro/monkey/evaluator"
 	"github.com/dev001hajipro/monkey/lexer"
 	"github.com/dev001hajipro/monkey/parser"
 )
@@ -45,8 +46,15 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, program.String())
-		io.WriteString(out, "\n")
+		// debug print
+		// io.WriteString(out, program.String())
+		// io.WriteString(out, "\n")
+
+		evaluated := evaluator.Eval(program)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }
 
