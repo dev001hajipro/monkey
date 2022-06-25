@@ -43,7 +43,7 @@ const (
 	ELSE     = "ELSE"
 	RETURN   = "RETURN"
 
-	EQ = "=="
+	EQ     = "=="
 	NOT_EQ = "!="
 )
 
