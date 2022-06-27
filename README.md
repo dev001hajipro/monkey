@@ -42,3 +42,22 @@ greeting("john")
 |  text   |   lexer   |  token   |
 |  token  |   parser  |  AST     |
 |  AST    |   eval    |  Object  |
+
+## Truthy
+
+> a truthly value is a value that is considered `true` 
+> when encountered in a Boolean context.
+
+[MDN Web Docs Glossary - Truthy](https://developer.mozilla.org/en-US/docs/Glossary/Truthy)
+
+言語によって真(true)の解釈は異なります。Monkeyの場合は、nullでなく、falseでもないものは真とするので、以下のコードはeverything okay!が表示されます。
+
+```ruby
+let x = 10;
+if (x) {
+    puts("everything okay!");
+} else {
+    puts("x is too high!");
+    shutdownSystem();
+}
+```
