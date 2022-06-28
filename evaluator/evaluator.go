@@ -8,7 +8,8 @@ import (
 func Eval(node ast.Node) object.Object {
 	switch node := node.(type) {
 	case *ast.Program:
-		return evalStatements(node.Statements)
+		return evalProgram(node)
+		//return evalStatements(node.Statements)
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
 	case *ast.PrefixExpression:
@@ -19,14 +20,18 @@ func Eval(node ast.Node) object.Object {
 		right := Eval(node.Right)
 		return evalInfixExpression(node.Operator, left, right)
 	case *ast.BlockStatement:
-		return evalStatements(node.Statements)
+		return evalBlockStatement(node)
+		//return evalStatements(node.Statements)
 	case *ast.IfExpression:
 		return evalIfExpression(node)
+	case *ast.ReturnStatement:
+		val := Eval(node.ReturnValue)
+		return &object.ReturnValue{Value: val}
 
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
 	case *ast.Boolean:
-		return nativeBooleanBoject(node.Value)
+		return nativeBooleanObject(node.Value)
 	}
 
 	return nil
@@ -58,9 +63,9 @@ func evalInfixExpression(
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
 	case operator == "==":
-		return nativeBooleanBoject(left == right)
+		return nativeBooleanObject(left == right)
 	case operator == "!=":
-		return nativeBooleanBoject(left != right)
+		return nativeBooleanObject(left != right)
 	default:
 		return NULL
 	}
@@ -82,13 +87,13 @@ func evalIntegerInfixExpression(
 	case "/":
 		return &object.Integer{Value: leftVal / rightVal}
 	case "<":
-		return nativeBooleanBoject(leftVal < rightVal)
+		return nativeBooleanObject(leftVal < rightVal)
 	case ">":
-		return nativeBooleanBoject(leftVal > rightVal)
+		return nativeBooleanObject(leftVal > rightVal)
 	case "==":
-		return nativeBooleanBoject(leftVal == rightVal)
+		return nativeBooleanObject(leftVal == rightVal)
 	case "!=":
-		return nativeBooleanBoject(leftVal != rightVal)
+		return nativeBooleanObject(leftVal != rightVal)
 	default:
 		return NULL
 	}
@@ -140,11 +145,41 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	return &object.Integer{Value: -value} // value to negative
 }
 
-func nativeBooleanBoject(input bool) *object.Boolean {
+func nativeBooleanObject(input bool) *object.Boolean {
 	if input {
 		return TRUE
 	}
 	return FALSE
+}
+
+func evalProgram(program *ast.Program) object.Object {
+	var result object.Object
+
+	for _, statement := range program.Statements {
+		result = Eval(statement)
+
+		if returnValue, ok := result.(*object.ReturnValue); ok {
+			return returnValue.Value
+		}
+	}
+
+	return result
+}
+
+
+func evalBlockStatement(block *ast.BlockStatement) object.Object {
+	var result object.Object
+
+	for _, statement := range block.Statements {
+		result = Eval(statement)
+
+		// ???
+		if result != nil && result.Type() == object.RETURN_VALUE_OBJ {
+			return result
+		}
+	}
+
+	return result
 }
 
 func evalStatements(stmts []ast.Statement) object.Object {
@@ -152,6 +187,10 @@ func evalStatements(stmts []ast.Statement) object.Object {
 
 	for _, statement := range stmts {
 		result = Eval(statement)
+
+		if returnValue, ok := result.(*object.ReturnValue); ok {
+			return returnValue.Value
+		}
 	}
 
 	return result

@@ -52,12 +52,97 @@ greeting("john")
 
 言語によって真(true)の解釈は異なります。Monkeyの場合は、nullでなく、falseでもないものは真とするので、以下のコードはeverything okay!が表示されます。
 
-```ruby
+```
 let x = 10;
 if (x) {
     puts("everything okay!");
 } else {
     puts("x is too high!");
     shutdownSystem();
+}
+```
+
+## 3.7 return 文
+
+### `3.7 return 文`の evalBlockStatementの動きの説明が難しかったので整理
+
+```
+if (10 > 1) {
+    return 10
+}
+```
+上記ソースコードは、条件文が(10 > 1)でtrueなので、ブロック文{に入り、object.ReturnValue{Value:10}を返す。
+
+次にブロック文がネストされている状態を考えてみます。以下のようなコードはプログラミング言語で一般的にある構造です。
+
+```
+if (10 > 1) {
+    if (5 > 2) {
+        return 10
+    }
+
+    return 1
+}
+```
+
+(10 > 1)のIf式が真なので、ブロック文{
+を評価します。
+
+```
+if (10 > 1) { <-このブロックを評価。
+    if (5 > 2) {
+        return 10
+    }
+
+    return 1
+}
+```
+
+ネストのIf式(5 > 2)は真なので、そのブロック文を評価します。
+
+```
+if (10 > 1) { 
+    if (5 > 2) {<-このブロックを評価。
+        return 10
+    }
+
+    return 1
+}
+```
+
+ブロック文には他の式や分はなく、Return文１つしかないためreturn文は、object.ReturnValue{Value:10}と評価されます。**そして、if式の戻り値となります。**
+
+以下の状態です。
+
+```
+if (10 > 1) {
+    object.ReturnValue{Value:10}
+
+    return 1
+}
+```
+
+以下、Page.148で実装したevalBlockStatementでは、評価した値がobject.ReturnValueなら、その値を戻り値としてevalBlockStatementのを終了します。
+
+```
+func evalBlockStatement(block *ast.BlockStatement) object.Object {
+	var result object.Object
+
+	for _, statement := range block.Statements {
+        // ここの評価は、単純な文の場合もあるが、
+        // If式とその後のブロック文つまり、
+        // 今まで説明してきたネストのIf文を評価する場合
+        // もある。その時は、ネスト文のobject.ReturnValue
+        // が返ってきて、このresult変数に代入される。
+		result = Eval(statement)
+
+		// ここは、単純にそのブロック文のreturnを返すためだけではない。
+        //
+		if result != nil && result.Type() == object.RETURN_VALUE_OBJ {
+			return result
+		}
+	}
+
+	return result
 }
 ```
