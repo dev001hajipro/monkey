@@ -9,7 +9,6 @@ func Eval(node ast.Node) object.Object {
 	switch node := node.(type) {
 	case *ast.Program:
 		return evalProgram(node)
-		//return evalStatements(node.Statements)
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
 	case *ast.PrefixExpression:
@@ -21,7 +20,6 @@ func Eval(node ast.Node) object.Object {
 		return evalInfixExpression(node.Operator, left, right)
 	case *ast.BlockStatement:
 		return evalBlockStatement(node)
-		//return evalStatements(node.Statements)
 	case *ast.IfExpression:
 		return evalIfExpression(node)
 	case *ast.ReturnStatement:
@@ -173,23 +171,35 @@ func evalBlockStatement(block *ast.BlockStatement) object.Object {
 	for _, statement := range block.Statements {
 		result = Eval(statement)
 
-		// ???
+		/*
+		if (10 > 1) {
+			if (5 > 3) {
+				return 10
+			}
+
+			return 1
+		}
+
+		if a nested if-expression was evaluated in above code, eval return the
+		object.ReturnValue like this.
+
+		if (10 > 1) {
+			object.ReturnValue{Value:10} <==== EVALUATED
+
+			return 1
+		}
+
+		then, below code return object.ReturnValue{Value:10} and stop loop.
+		so don't eval `return 1` line.
+
+		if (10 > 1) {
+			object.ReturnValue{Value:10}
+
+			return 1 <==== DON'T EVAL!!!
+		}
+		*/
 		if result != nil && result.Type() == object.RETURN_VALUE_OBJ {
 			return result
-		}
-	}
-
-	return result
-}
-
-func evalStatements(stmts []ast.Statement) object.Object {
-	var result object.Object
-
-	for _, statement := range stmts {
-		result = Eval(statement)
-
-		if returnValue, ok := result.(*object.ReturnValue); ok {
-			return returnValue.Value
 		}
 	}
 
