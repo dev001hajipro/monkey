@@ -1,6 +1,8 @@
 package evaluator
 
 import (
+	"fmt"
+
 	"github.com/dev001hajipro/monkey/ast"
 	"github.com/dev001hajipro/monkey/object"
 )
@@ -13,10 +15,20 @@ func Eval(node ast.Node) object.Object {
 		return Eval(node.Expression)
 	case *ast.PrefixExpression:
 		right := Eval(node.Right)
+		if isError(right) {
+			return right
+		}
 		return evalPrefixExpression(node.Operator, right)
 	case *ast.InfixExpression:
 		left := Eval(node.Left)
+		if isError(left) {
+			return left
+		}
+
 		right := Eval(node.Right)
+		if isError(right) {
+			return right
+		}
 		return evalInfixExpression(node.Operator, left, right)
 	case *ast.BlockStatement:
 		return evalBlockStatement(node)
@@ -24,6 +36,9 @@ func Eval(node ast.Node) object.Object {
 		return evalIfExpression(node)
 	case *ast.ReturnStatement:
 		val := Eval(node.ReturnValue)
+		if isError(val) {
+			return val
+		}
 		return &object.ReturnValue{Value: val}
 
 	case *ast.IntegerLiteral:
@@ -50,7 +65,7 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	case "-":
 		return evalMinusPrefixOperatorExpression(right)
 	default:
-		return NULL
+		return newError("unknown operator: %s%s", operator, right.Type())
 	}
 }
 
@@ -64,8 +79,12 @@ func evalInfixExpression(
 		return nativeBooleanObject(left == right)
 	case operator == "!=":
 		return nativeBooleanObject(left != right)
+	case left.Type() != right.Type():
+		return newError("type mismatch: %s %s %s",
+			left.Type(), operator, right.Type())
 	default:
-		return NULL
+		return newError("unknown operator: %s %s %s",
+			left.Type(), operator, right.Type())
 	}
 }
 
@@ -93,12 +112,16 @@ func evalIntegerInfixExpression(
 	case "!=":
 		return nativeBooleanObject(leftVal != rightVal)
 	default:
-		return NULL
+		return newError("unknown operator: %s %s %s",
+			left.Type(), operator, right.Type())
 	}
 }
 
 func evalIfExpression(ie *ast.IfExpression) object.Object {
 	condition := Eval(ie.Condition)
+	if isError(condition) {
+		return condition
+	}
 
 	if isTruthy(condition) {
 		return Eval(ie.Consequence)
@@ -137,7 +160,7 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 
 func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	if right.Type() != object.INTEGER_OBJ {
-		return NULL
+		return newError("unknown operator: -%s", right.Type())
 	}
 	value := right.(*object.Integer).Value
 	return &object.Integer{Value: -value} // value to negative
@@ -156,14 +179,16 @@ func evalProgram(program *ast.Program) object.Object {
 	for _, statement := range program.Statements {
 		result = Eval(statement)
 
-		if returnValue, ok := result.(*object.ReturnValue); ok {
-			return returnValue.Value
+		switch result := result.(type) {
+		case *object.ReturnValue:
+			return result.Value // unwrap
+		case *object.Error:
+			return result
 		}
 	}
 
 	return result
 }
-
 
 func evalBlockStatement(block *ast.BlockStatement) object.Object {
 	var result object.Object
@@ -172,36 +197,50 @@ func evalBlockStatement(block *ast.BlockStatement) object.Object {
 		result = Eval(statement)
 
 		/*
-		if (10 > 1) {
-			if (5 > 3) {
-				return 10
+			if (10 > 1) {
+				if (5 > 3) {
+					return 10
+				}
+
+				return 1
 			}
 
-			return 1
-		}
+			if a nested if-expression was evaluated in above code, eval return the
+			object.ReturnValue like this.
 
-		if a nested if-expression was evaluated in above code, eval return the
-		object.ReturnValue like this.
+			if (10 > 1) {
+				object.ReturnValue{Value:10} <==== EVALUATED
 
-		if (10 > 1) {
-			object.ReturnValue{Value:10} <==== EVALUATED
+				return 1
+			}
 
-			return 1
-		}
+			then, below code return object.ReturnValue{Value:10} and stop loop.
+			so don't eval `return 1` line.
 
-		then, below code return object.ReturnValue{Value:10} and stop loop.
-		so don't eval `return 1` line.
+			if (10 > 1) {
+				object.ReturnValue{Value:10}
 
-		if (10 > 1) {
-			object.ReturnValue{Value:10}
-
-			return 1 <==== DON'T EVAL!!!
-		}
+				return 1 <==== DON'T EVAL!!!
+			}
 		*/
-		if result != nil && result.Type() == object.RETURN_VALUE_OBJ {
-			return result
+		if result != nil {
+			rt := result.Type()
+			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
+				return result
+			}
 		}
 	}
 
 	return result
+}
+
+func newError(format string, a ...any) *object.Error {
+	return &object.Error{Message: fmt.Sprintf(format, a...)}
+}
+
+func isError(obj object.Object) bool {
+	if obj != nil {
+		return obj.Type() == object.ERROR_OBJ
+	}
+	return false
 }
