@@ -7,6 +7,7 @@ import (
 
 	"github.com/dev001hajipro/monkey/evaluator"
 	"github.com/dev001hajipro/monkey/lexer"
+	"github.com/dev001hajipro/monkey/object"
 	"github.com/dev001hajipro/monkey/parser"
 )
 
@@ -28,6 +29,7 @@ const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnvironment()
 
 	for {
 		fmt.Print(PROMPT)
@@ -50,7 +52,7 @@ func Start(in io.Reader, out io.Writer) {
 		io.WriteString(out, "[DEBUG] " + program.String())
 		io.WriteString(out, "\n")
 
-		evaluated := evaluator.Eval(program)
+		evaluated := evaluator.Eval(program, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")
