@@ -146,3 +146,7 @@ func evalBlockStatement(block *ast.BlockStatement) object.Object {
 	return result
 }
 ```
+
+## TODO
+- show nestedEnvironment.
+- generate ast graph
