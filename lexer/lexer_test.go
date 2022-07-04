@@ -283,6 +283,7 @@ if (5 < 10) {
 10 != 9;
 "foobar"
 "foo bar"
+[1, 2];
 `
 
 	tests := []ExpectedType{
@@ -387,6 +388,14 @@ if (5 < 10) {
 
 		{token.STRING, "foobar"},
 		{token.STRING, "foo bar"},
+
+		// [1, 2];
+		{token.LBRACKET, "["},
+		{token.INT, "1"},
+		{token.COMMA, ","},
+		{token.INT, "2"},
+		{token.RBRACKET, "]"},
+		{token.SEMICOLON, ";"},
 
 		{token.EOF, ""},
 	}
