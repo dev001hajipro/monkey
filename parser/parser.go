@@ -18,6 +18,7 @@ const (
 	PRODUCT     // * /
 	PREFIX      // -X !X
 	CALL        // myFunction(X)
+	INDEX       // array[index]
 )
 
 var precedence = map[token.TokenType]int{
@@ -30,6 +31,7 @@ var precedence = map[token.TokenType]int{
 	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
 	token.LPAREN:   CALL,
+	token.LBRACKET: INDEX,
 }
 
 type (
@@ -94,6 +96,11 @@ func New(l *lexer.Lexer) *Parser {
 	// the call expressiosn is like a `add(1 + 2)`
 	// it is parsed by '('. it just like infix operator.
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
+
+	// [ infix operator
+	// we use array like a myArray[1].
+	// but a parser think [ infix operator.
+	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
 
 	// call nextToken twice to initialize curToken and peekToken.
 	p.nextToken()
@@ -462,4 +469,18 @@ func (p *Parser) parseExpressionList(end token.TokenType) []ast.Expression {
 	}
 
 	return list
+}
+
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	exp := &ast.IndexExpression{Token: p.curToken, Left: left}
+
+	p.nextToken()
+
+	exp.Index = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RBRACKET) {
+		return nil
+	}
+
+	return exp
 }
