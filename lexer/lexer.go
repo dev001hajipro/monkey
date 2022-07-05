@@ -73,10 +73,12 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LT, l.ch)
 	case '>':
 		tok = newToken(token.GT, l.ch)
+	case ':':
+		tok = newToken(token.COLON, l.ch)
 	case ';':
 		tok = newToken(token.SEMICOLON, l.ch)
 	case ',':
-		tok = newToken(token.COMMA, l.ch)	
+		tok = newToken(token.COMMA, l.ch)
 	case '(':
 		tok = newToken(token.LPAREN, l.ch)
 	case ')':
@@ -117,7 +119,7 @@ func newToken(s token.TokenType, b byte) token.Token {
 	return token.Token{Type: s, Literal: string(b)}
 }
 
-func (l *Lexer)readString() string {
+func (l *Lexer) readString() string {
 	// when this function called, position is '"'. so, move to next char.
 	position := l.position + 1
 	for {
