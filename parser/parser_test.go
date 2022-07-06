@@ -844,6 +844,9 @@ func TestParsingArrayLiteral(t *testing.T) {
 	checkParserErrors(t, p)
 
 	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("stmt not ast.ExpressionStatement. got=%T", stmt)
+	}
 	array, ok := stmt.Expression.(*ast.ArrayLiteral)
 	if !ok {
 		t.Fatalf("exp not ast.ArrayLiteral. got=%T", stmt.Expression)
@@ -1028,7 +1031,7 @@ func TestParsingHashLiteralsWithExpressions(t *testing.T) {
 		t.Errorf("hash.Pairs has wrong length. got=%d", len(hash.Pairs))
 	}
 
-	tests := map[string]func(ast.Expression) {
+	tests := map[string]func(ast.Expression){
 		"one": func(e ast.Expression) {
 			testInfixExpression(t, e, 0, "+", 1)
 		},
