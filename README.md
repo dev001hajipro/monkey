@@ -150,3 +150,4 @@ func evalBlockStatement(block *ast.BlockStatement) object.Object {
 ## TODO
 - show nestedEnvironment.
 - generate ast graph
+- reflect.DeepEqual on map.
