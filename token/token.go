@@ -21,9 +21,8 @@ const (
 	BANG     = "!"
 	SLASH    = "/"
 	ASTERISK = "*"
-
-	LT = "<"
-	GT = ">"
+	LT       = "<"
+	GT       = ">"
 
 	// delimiter
 	COMMA     = ","
@@ -48,8 +47,8 @@ const (
 
 	EQ     = "=="
 	NOT_EQ = "!="
-
 	STRING = "STRING"
+	MACRO  = "MACRO"
 )
 
 var keywords = map[string]TokenType{
@@ -60,6 +59,7 @@ var keywords = map[string]TokenType{
 	"if":     IF,
 	"else":   ELSE,
 	"return": RETURN,
+	"macro":  MACRO,
 }
 
 func LookupIdent(ident string) TokenType {

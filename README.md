@@ -35,13 +35,14 @@ greeting("john")
 
 [wren](https://github.com/munificent/wren) は二種類の値表現がある。
 
-## IO
+## Data Structure
 
-|  input  |  process  |  output  |
-| ------- | --------- | -------- |
-|  text   |   lexer   |  token   |
-|  token  |   parser  |  AST     |
-|  AST    |   eval    |  Object  |
+|  input           |  process  |  output       |
+| ---------------- | --------- | ------------- |
+| text             | lexer     | token         |
+| token            | parser    | AST           |
+| AST              | macro     | modified AST  |
+| modified AST     | eval      | Object        |
 
 ## Truthy
 
