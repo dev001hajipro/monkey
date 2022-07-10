@@ -71,43 +71,42 @@ func testParseProgram(input string) *ast.Program {
 	return p.ParseProgram()
 }
 
-func DefineMacro(program *ast.Program, env *object.Environment) {
-	definitions := []int{}
+func TestExpandMacro(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			`
+			let infixExpression = macro() { quote(1 + 2); };
+			
+			infixExpression();
+			`,
+			`(1 + 2)`,
+		},
+		{
+			`
+			let reverse = macro(a, b) { quote(unquote(b) - unquote(a)); };
 
-	// find macro definition.
-	for i, statement := range program.Statements {
-		if isMacroDefinition(statement) {
-			addMacro(statement, env)
-			definitions = append(definitions, i)
+			reverse(2 + 2, 10 - 5)
+			`,
+			`(10 - 5) - (2 + 2)`,
+		},
+	}
+
+	for _, tt := range tests {
+		expected := testParseProgram(tt.expected)
+		program := testParseProgram(tt.input)
+
+		// set macro definitions to env variable of object.Environment.
+		env := object.NewEnvironment()
+		DefineMacro(program, env)
+
+		expanded := ExpandMacro(program, env)
+
+		if expanded.String() != expected.String() {
+			t.Errorf("not equal. want=%q, got=%q",
+				expected.String(), expanded.String())
 		}
 	}
-
-	// delete macro definition from AST.
-	for i := len(definitions) - 1; i >= 0; i = i - 1 {
-		definitionIndex := definitions[i]
-		program.Statements = append(
-			program.Statements[:definitionIndex],
-			program.Statements[definitionIndex+1:]...)
-	}
-}
-
-func isMacroDefinition(node ast.Statement) bool {
-	letStatement, ok := node.(*ast.LetStatement)
-	if !ok {
-		return false
-	}
-	_, ok = letStatement.Value.(*ast.MacroLiteral)
-	return ok
-}
-
-func addMacro(stmt ast.Statement, env *object.Environment) {
-	letStatement, _ := stmt.(*ast.LetStatement)
-	macroLiteral, _ := letStatement.Value.(*ast.MacroLiteral)
-
-	macro := &object.Macro{
-		Parameters: macroLiteral.Parameters,
-		Env:        env,
-		Body:       macroLiteral.Body,
-	}
-	env.Set(letStatement.Name.Value, macro)
 }

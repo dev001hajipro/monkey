@@ -29,6 +29,7 @@ func evalUnquoteCalls(quoted ast.Node, env *object.Environment) ast.Node {
 			return node
 		}
 
+		// a unquote call has only one argument.
 		unquoated := Eval(call.Arguments[0], env)
 		return convertObectToASTNode(unquoated)
 	})

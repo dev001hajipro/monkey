@@ -148,6 +148,11 @@ func evalBlockStatement(block *ast.BlockStatement) object.Object {
 }
 ```
 
+## マクロの展開 macro expansion
+
+1. マクロの呼び出し評価
+2. 評価した結果を元のASTに挿入
+
 ## TODO
 - show nestedEnvironment.
 - generate ast graph
